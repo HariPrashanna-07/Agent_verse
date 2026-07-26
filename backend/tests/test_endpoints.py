@@ -28,6 +28,7 @@ def _mock_groq_text(content: str):
 
 
 _DUMMY_RESUME = {
+    "is_resume": True,
     "technical_skills": ["Python", "FastAPI"],
     "work_experience": [],
     "projects": [],
@@ -109,7 +110,20 @@ class TestProcessResume(unittest.TestCase):
         )
         self.assertEqual(resp.status_code, 400)
 
-    @patch("backend.app.main.upload_pdf_to_s3", return_value="s3_upload_skipped")
+    @patch("backend.app.main.upload_pdf_to_s3", return_value="s3_url")
+    @patch("backend.app.main.extract_text_from_pdf_bytes", return_value="This is a general article about machine learning.")
+    @patch("backend.app.main.analyze_resume", return_value={**_DUMMY_RESUME, "is_resume": False})
+    def test_non_resume_returns_422(self, mock_analyze, mock_extract, mock_s3):
+        """Uploading a non-resume PDF must be rejected before the interview plan is created."""
+        resp = client.post(
+            "/api/process-resume",
+            files={"file": ("article.pdf", io.BytesIO(b"%PDF-1.4 fake"), "application/pdf")},
+            data={"company": "Google", "role": "SWE"},
+        )
+        self.assertEqual(resp.status_code, 422)
+        self.assertIn("resume", resp.json()["detail"].lower())
+
+    @patch("backend.app.main.upload_pdf_to_s3", return_value="s3_url")
     @patch("backend.app.main.extract_text_from_pdf_bytes", return_value="")
     def test_unreadable_pdf_returns_422(self, mock_extract, mock_s3):
         resp = client.post(

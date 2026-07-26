@@ -5,6 +5,27 @@ from backend.app.utils.groq_client import get_groq_client
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Role-type helper
+# ---------------------------------------------------------------------------
+
+_SOFTWARE_KEYWORDS = {
+    "software", "swe", "backend", "front end", "frontend", "full stack", "fullstack",
+    "web", "mobile", "android", "ios", "cloud", "devops", "sre", "platform",
+    "data engineer", "data scientist", "data science", "machine learning", "ml engineer",
+    "ai engineer", "deep learning", "nlp", "computer vision", "site reliability",
+    "firmware", "embedded", "game", "security engineer", "cybersecurity",
+    "blockchain", "database", "dba", "qa engineer", "test engineer",
+}
+
+
+def _detect_role_type(target_role: str) -> str:
+    role_lower = target_role.lower()
+    for kw in _SOFTWARE_KEYWORDS:
+        if kw in role_lower:
+            return "software"
+    return "core"
+
 
 # ---------------------------------------------------------------------------
 # Internal normalization helpers
@@ -49,20 +70,15 @@ def _normalize_roadmap_items(roadmap) -> list:
 
 def _normalize_payload(payload: dict) -> dict:
     """Normalise LLM output into the canonical EvaluationOutput shape."""
-    # Scores
     scores = payload.get("scores", {})
     if isinstance(scores, dict):
         scores = _normalize_score_keys(scores)
 
-    # Strengths / weaknesses — may be nested under "feedback"
     feedback = payload.get("feedback", {})
     strengths = payload.get("strengths") or feedback.get("strengths", [])
     weaknesses = payload.get("weaknesses") or feedback.get("weaknesses", [])
-
-    # Detailed per-question feedback
     detailed_feedback = payload.get("detailed_feedback", [])
 
-    # Roadmap — may be nested under various keys
     roadmap = payload.get("roadmap") or payload.get("learning_roadmap", [])
     if isinstance(roadmap, dict):
         roadmap = roadmap.get("7_day_plan", [])
@@ -100,14 +116,48 @@ def evaluate_interview(
     """
     try:
         client = get_groq_client()
+        role_type = _detect_role_type(target_role)
 
         company_line = f"Target Company: {target_company}" if target_company else ""
 
-        prompt = f"""You are an expert technical interview evaluator.
+        if role_type == "software":
+            role_type_guidance = (
+                "ROLE TYPE: SOFTWARE ENGINEERING\n"
+                "Evaluate the candidate on:\n"
+                "- Correctness and efficiency of their code/algorithm solutions\n"
+                "- Time and space complexity analysis — did they proactively discuss it?\n"
+                "- System design thinking: component breakdown, scalability, trade-offs\n"
+                "- Understanding of CS fundamentals: data structures, OOP, concurrency\n"
+                "- Code quality: edge cases, clean logic, optimal approach\n"
+                "Penalise heavily if the candidate:\n"
+                "  - Gave a brute-force solution without discussing optimisation\n"
+                "  - Could not explain the complexity of their solution\n"
+                "  - Made logical errors in their code or algorithm\n"
+                "  - Could not describe system components or API design adequately"
+            )
+        else:
+            role_type_guidance = (
+                f"ROLE TYPE: CORE / NON-SOFTWARE — {target_role}\n"
+                "Evaluate the candidate on:\n"
+                "- Depth of domain knowledge: relevant theories, standards, methodologies\n"
+                "- Real-world applicability: did they tie concepts to practical scenarios?\n"
+                "- Accuracy of technical details: material properties, financial formulas, regulations, etc.\n"
+                "- Problem-solving approach: systematic reasoning, constraint handling, safety/compliance awareness\n"
+                "- Communication of complex concepts clearly and professionally\n"
+                "Penalise heavily if the candidate:\n"
+                "  - Gave vague or textbook-only answers without real-world grounding\n"
+                "  - Missed key domain standards or regulatory requirements\n"
+                "  - Could not reason through a scenario or trade-off\n"
+                "  - Lacked specificity in technical details"
+            )
+
+        prompt = f"""You are an expert interview evaluator.
 {company_line}
 Target Role: {target_role}
 
-Carefully review every exchange in the following transcript and produce a comprehensive evaluation.
+{role_type_guidance}
+
+Carefully review every exchange in the following transcript and produce a comprehensive, brutally honest evaluation.
 
 TRANSCRIPT:
 {json.dumps(transcript, indent=2)}
@@ -127,9 +177,9 @@ Return ONLY a valid raw JSON object matching exactly this schema:
     "Specific area that needs improvement"
   ],
   "detailed_feedback": [
-    "Q1: (If Software) Candidate correctly identified the O(n) time complexity but missed space complexity analysis.",
-    "Q2: (If Non-Software) Strong explanation of industry safety standards and material stress testing trade-offs.",
-    "Q3: Answer was too brief — could have provided a specific real-world example."
+    "Q1: Candidate correctly identified the problem but missed discussing edge cases.",
+    "Q2: Strong explanation with real-world grounding and specific examples.",
+    "Q3: Answer was too brief — could have provided more depth on trade-offs."
   ],
   "roadmap": [
     {{"day": 1, "topic": "Topic Name", "task": "Concrete study or practice task"}},
@@ -143,10 +193,19 @@ Return ONLY a valid raw JSON object matching exactly this schema:
 }}
 
 Rules:
-- STRICT SCORING: You must be extremely strict and critical. Do not inflate scores. A typical candidate who gives average or brief answers should score 40-60, not 80-90. Only award 90+ for truly exceptional, highly detailed answers.
+- STRICT SCORING: Be extremely strict and critical. Do not inflate scores.
+  - 0–40: Very poor — fundamental gaps, could not answer basic questions
+  - 40–60: Below average — significant weaknesses, superficial answers
+  - 60–75: Average — adequate but lacks depth, missed key points
+  - 75–85: Good — solid answers with most key points covered
+  - 85–95: Excellent — deep, well-reasoned answers with strong domain/technical mastery
+  - 95–100: Exceptional — near-perfect, every answer was insightful and complete
 - All scores must be integers between 0 and 100.
-- `detailed_feedback` must have one item per interviewer question referencing the candidate's specific answer. Point out flaws, omissions, and lack of depth strictly.
-- `roadmap` must have exactly 7 items (day 1–7), targeted at the identified weaknesses.
+- `detailed_feedback` must have one item per interviewer question referencing the candidate's specific answer.
+  Point out flaws, omissions, and lack of depth strictly.
+- `roadmap` must have exactly 7 items (day 1–7), targeted squarely at the identified weaknesses.
+- Roadmap tasks for software roles should reference LeetCode, system design resources, etc.
+- Roadmap tasks for core roles should reference domain standards, textbooks, or professional certifications.
 """
 
         response = client.chat.completions.create(
@@ -171,9 +230,6 @@ Rules:
     except Exception as exc:
         logger.error("Evaluation agent failed: %s", exc)
 
-    # ------------------------------------------------------------------
-    # Fallback response — never crash the API endpoint
-    # ------------------------------------------------------------------
     return {
         "scores": {
             "overall": 0,

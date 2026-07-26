@@ -108,6 +108,8 @@ function AppInner() {
           currentFocus={currentFocus}
           resumeContext={session.resumeAnalysis}
           interviewPlan={session.interviewPlan}
+          targetRole={(session.sessionContext.target_role as string) ?? ""}
+          targetCompany={(session.sessionContext.target_company as string) ?? ""}
           candidateId={user?.candidateId ?? ""}
           token={token ?? ""}
           onInterviewEnd={handleInterviewEnd}

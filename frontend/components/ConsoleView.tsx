@@ -19,6 +19,8 @@ interface ConsoleViewProps {
     currentFocus: string;
     resumeContext: Record<string, unknown>;
     interviewPlan: Record<string, unknown>;
+    targetRole?: string;
+    targetCompany?: string;
     candidateId: string;
     token: string;
     onInterviewEnd: (evaluation: Record<string, unknown>) => void;
@@ -142,6 +144,8 @@ export default function ConsoleView({
     currentFocus,
     resumeContext,
     interviewPlan,
+    targetRole = "",
+    targetCompany = "",
     candidateId,
     token,
     onInterviewEnd,
@@ -162,6 +166,8 @@ export default function ConsoleView({
     const bottomRef = useRef<HTMLDivElement>(null);
     const [codeContent, setCodeContent] = useState("");
     const [requiresCode, setRequiresCode] = useState(false);
+    const [typingMode, setTypingMode] = useState(false);
+    const [typedAnswer, setTypedAnswer] = useState("");
 
     // Auto-scroll on new messages
     useEffect(() => {
@@ -184,15 +190,17 @@ export default function ConsoleView({
 
     // ── Send answer ────────────────────────────────────────────────────────────
     const sendAnswer = useCallback(async () => {
-        const transcript = (stt.transcript + (stt.interim ? " " + stt.interim : "")).trim();
+        const transcript = typingMode
+            ? typedAnswer.trim()
+            : (stt.transcript + (stt.interim ? " " + stt.interim : "")).trim();
         const codeSuffix = requiresCode && codeContent.trim() ? `\n\n[Code Snippet]:\n${codeContent.trim()}` : "";
         const answer = transcript + codeSuffix;
 
         if (!answer || isTyping) return;
 
         // Stop mic and TTS before sending
-        stt.stop();
-        stt.reset();
+        if (!typingMode) { stt.stop(); stt.reset(); }
+        setTypedAnswer("");
         tts.cancel();
         setSpeakingId(null);
         setCodeContent("");
@@ -216,6 +224,8 @@ export default function ConsoleView({
                     current_focus: currentFocus,
                     candidate_answer: answer,
                     history,
+                    target_role: targetRole,
+                    target_company: targetCompany,
                     resume_context: resumeContext,
                     interview_plan: interviewPlan,
                 }),
@@ -250,7 +260,7 @@ export default function ConsoleView({
         } finally {
             setIsTyping(false);
         }
-    }, [stt, isTyping, tts, messages, autoSpeak, currentFocus, resumeContext, interviewPlan, requiresCode, codeContent]);
+    }, [stt, isTyping, tts, messages, autoSpeak, currentFocus, resumeContext, interviewPlan, requiresCode, codeContent, typingMode, typedAnswer]);
 
     // ── Mic toggle ─────────────────────────────────────────────────────────────
     const toggleMic = useCallback(() => {
@@ -499,43 +509,98 @@ export default function ConsoleView({
                     </div>
                 )}
 
+                {/* Voice / Typing mode toggle */}
+                <div className="flex items-center justify-end">
+                    <button
+                        id="toggle-typing-mode-btn"
+                        type="button"
+                        onClick={() => {
+                            // Stop voice if switching away from voice mode
+                            if (!typingMode && stt.listening) { stt.stop(); stt.reset(); }
+                            setTypingMode((v) => !v);
+                        }}
+                        disabled={isTyping || isEnding}
+                        className={[
+                            "flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-medium border transition-all duration-200",
+                            typingMode
+                                ? "bg-violet-500/15 border-violet-500/35 text-violet-300 hover:bg-violet-500/25"
+                                : "bg-[var(--bg-highlight)] border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] hover:text-[var(--text-secondary)]",
+                            (isTyping || isEnding) ? "opacity-40 cursor-not-allowed" : "",
+                        ].join(" ")}
+                        title={typingMode ? "Switch to voice input" : "Switch to text input"}
+                        aria-label={typingMode ? "Switch to voice input" : "Type your answer"}
+                    >
+                        {typingMode ? (
+                            /* mic icon */
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                            </svg>
+                        ) : (
+                            /* keyboard icon */
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 7.5h10.5M6.75 12h10.5M6.75 16.5h4.5M3 6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v10.5A2.25 2.25 0 0118.75 19.5H5.25A2.25 2.25 0 013 17.25V6.75z" />
+                            </svg>
+                        )}
+                        <span>{typingMode ? "Use Voice" : "Type Answer"}</span>
+                    </button>
+                </div>
+
                 {/* Voice Box & Actions */}
                 <div className="flex gap-4 items-end">
 
-                    {/* Voice Active Monitor (replaces generic textarea) */}
-                    <div className="flex-1 min-h-[52px] relative bg-[var(--bg-highlight)] border border-[var(--border)] rounded-xl px-4 py-3 flex items-center gap-3 overflow-hidden">
+                    {typingMode ? (
+                        /* ── Typing mode: plain textarea ── */
+                        <textarea
+                            id="typed-answer-input"
+                            placeholder="Type your answer here…"
+                            value={typedAnswer}
+                            onChange={(e) => setTypedAnswer(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                                    e.preventDefault();
+                                    sendAnswer();
+                                }
+                            }}
+                            disabled={isTyping || isEnding}
+                            rows={3}
+                            className="flex-1 bg-[var(--bg-highlight)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] resize-none focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-colors disabled:opacity-50"
+                        />
+                    ) : (
+                        /* ── Voice mode: transcript display ── */
+                        <div className="flex-1 min-h-[52px] relative bg-[var(--bg-highlight)] border border-[var(--border)] rounded-xl px-4 py-3 flex items-center gap-3 overflow-hidden">
 
-                        {/* Mic Button Inline */}
-                        {stt.supported && (
-                            <button
-                                onClick={toggleMic}
-                                disabled={isTyping || isEnding}
-                                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${stt.listening ? "bg-rose-500 text-white animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.5)]" : "bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-muted)] hover:text-white"
-                                    } disabled:opacity-40`}
-                            >
-                                {stt.listening ? (
-                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+                            {/* Mic Button Inline */}
+                            {stt.supported && (
+                                <button
+                                    onClick={toggleMic}
+                                    disabled={isTyping || isEnding}
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${stt.listening ? "bg-rose-500 text-white animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.5)]" : "bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-muted)] hover:text-white"
+                                        } disabled:opacity-40`}
+                                >
+                                    {stt.listening ? (
+                                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+                                    ) : (
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" /></svg>
+                                    )}
+                                </button>
+                            )}
+
+                            {/* Native Voice Transcript Visualization */}
+                            <div className="flex-1 text-sm">
+                                {stt.transcript ? (
+                                    <span className="text-[var(--text-primary)]">{stt.transcript} </span>
+                                ) : stt.listening ? (
+                                    <span className="text-[var(--text-muted)] italic">Listening to your answer...</span>
                                 ) : (
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" /></svg>
+                                    <span className="text-[var(--text-muted)] italic">Click the mic to speak your answer</span>
                                 )}
-                            </button>
-                        )}
 
-                        {/* Native Voice Transcript Visualization */}
-                        <div className="flex-1 text-sm">
-                            {stt.transcript ? (
-                                <span className="text-[var(--text-primary)]">{stt.transcript} </span>
-                            ) : stt.listening ? (
-                                <span className="text-[var(--text-muted)] italic">Listening to your answer...</span>
-                            ) : (
-                                <span className="text-[var(--text-muted)] italic">Click the mic to speak your answer</span>
-                            )}
-
-                            {stt.interim && (
-                                <span className="text-[var(--text-muted)] opacity-60"> {stt.interim}</span>
-                            )}
+                                {stt.interim && (
+                                    <span className="text-[var(--text-muted)] opacity-60"> {stt.interim}</span>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Send button */}
                     <Button
@@ -543,7 +608,12 @@ export default function ConsoleView({
                         variant="primary"
                         size="lg"
                         onClick={sendAnswer}
-                        disabled={(!stt.transcript.trim() && !stt.interim.trim() && !codeContent.trim()) || isTyping || isEnding}
+                        disabled={
+                            (typingMode
+                                ? !typedAnswer.trim()
+                                : (!stt.transcript.trim() && !stt.interim.trim())
+                            ) && !codeContent.trim() || isTyping || isEnding
+                        }
                         loading={isTyping}
                         className="flex-shrink-0 px-6"
                     >

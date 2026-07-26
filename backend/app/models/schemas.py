@@ -53,6 +53,7 @@ class InterviewTurnRequest(BaseModel):
     current_focus: str
     candidate_answer: Optional[str] = ""
     target_company: Optional[str] = ""
+    target_role: Optional[str] = ""
     resume_context: Optional[dict] = None
     interview_plan: Optional[dict] = None
 

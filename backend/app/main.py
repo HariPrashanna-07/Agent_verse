@@ -197,6 +197,17 @@ async def process_resume(
             )
 
         resume_analysis = analyze_resume(text)
+
+        # Block non-resume documents before planning or interview starts
+        if not resume_analysis.get("is_resume", True):
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "The uploaded document does not appear to be a resume. "
+                    "Please upload a valid resume PDF to start the interview."
+                ),
+            )
+
         interview_plan = generate_interview_plan(resume_analysis, company, role, jd or "")
 
         logger.info(
@@ -260,6 +271,7 @@ async def interview_turn(req: InterviewTurnRequest):
             current_focus=req.current_focus,
             candidate_answer=req.candidate_answer or "",
             target_company=req.target_company or "",
+            target_role=req.target_role or "",
             resume_context=req.resume_context,
             interview_plan=req.interview_plan,
         )
