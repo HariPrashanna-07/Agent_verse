@@ -5,7 +5,7 @@ import Button from "./ui/Button";
 import Badge from "./ui/Badge";
 import { useVoice } from "@/hooks/useVoice";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || (typeof window !== "undefined" && window.location.hostname === "localhost" ? "http://localhost:8000" : "");
 
 interface Message {
     id: string;
