@@ -90,6 +90,7 @@ Rules:
 - difficulty must be one of: Easy, Medium, Hard
 - estimated_duration_minutes must be a number (e.g., 30)
 - Tailor every sample_question to be specific to {target_company} and {target_role}
+- EXTREMELY CRITICAL: The standard, complexity, and difficulty of the questions MUST strictly reflect the engineering culture and interview standards of {target_company}. If {target_company} is FAANG-level or a top tech firm, you must ask rigorous, deeply technical/system-level questions.
 """
 
     try:

@@ -7,8 +7,9 @@ import LoginView from "@/components/LoginView";
 import UploadView from "@/components/UploadView";
 import ConsoleView from "@/components/ConsoleView";
 import ScorecardView from "@/components/ScorecardView";
+import DashboardView from "@/components/DashboardView";
 
-type AppView = "login" | "upload" | "console" | "scorecard";
+type AppView = "login" | "dashboard" | "upload" | "console" | "scorecard";
 
 interface SessionData {
   resumeAnalysis: Record<string, unknown>;
@@ -39,7 +40,7 @@ function AppInner() {
   // Handle view transitions based on auth state
   useEffect(() => {
     if (isAuthenticated && view === "login") {
-      setView("upload");
+      setView("dashboard");
     } else if (!isAuthenticated && view !== "login") {
       setView("login");
       setSession(null);
@@ -47,7 +48,7 @@ function AppInner() {
     }
   }, [isAuthenticated, view]);
 
-  const handleLoginSuccess = () => setView("upload");
+  const handleLoginSuccess = () => setView("dashboard");
 
   const handleInterviewStart = (data: {
     resumeAnalysis: Record<string, unknown>;
@@ -67,7 +68,7 @@ function AppInner() {
   const handleRetake = () => {
     setSession(null);
     setEvaluation(null);
-    setView("upload");
+    setView("dashboard");
   };
 
   const currentFocus = (() => {
@@ -76,8 +77,8 @@ function AppInner() {
     return plan?.plan?.[0]?.focus ?? "General";
   })();
 
-  // The Navbar only shows step progress for non-login views
-  const navView = view === "login" ? "upload" : view;
+  // The Navbar only shows step progress for non-login and non-dashboard views
+  const navView = (view === "login" || view === "dashboard") ? "upload" : view;
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-base)]">
@@ -88,6 +89,14 @@ function AppInner() {
       />
 
       {view === "login" && <LoginView onLoginSuccess={handleLoginSuccess} />}
+
+      {view === "dashboard" && user && (
+        <DashboardView
+          candidateId={user.candidateId}
+          token={token ?? ""}
+          onTakeInterview={() => setView("upload")}
+        />
+      )}
 
       {view === "upload" && (
         <UploadView onInterviewStart={handleInterviewStart} />

@@ -34,19 +34,20 @@ Day 7 must always be a full mock interview / final review day.
 Return ONLY a valid raw JSON object with a single key "roadmap" containing an array of 7 items:
 {{
     "roadmap": [
-        {{"day": 1, "topic": "Topic Name", "task": "Concrete, actionable task or problem set to complete"}},
-        {{"day": 2, "topic": "Topic Name", "task": "Concrete, actionable task or problem set to complete"}},
-        {{"day": 3, "topic": "Topic Name", "task": "Concrete, actionable task or problem set to complete"}},
-        {{"day": 4, "topic": "Topic Name", "task": "Concrete, actionable task or problem set to complete"}},
-        {{"day": 5, "topic": "Topic Name", "task": "Concrete, actionable task or problem set to complete"}},
-        {{"day": 6, "topic": "Behavioral Polish", "task": "Practice STAR-method storytelling"}},
-        {{"day": 7, "topic": "Mock Interview", "task": "Full mock interview covering all identified weak areas"}}
+        {{"day": 1, "topic": "Topic Name", "task": "Concrete task", "resources": ["https://url-1.com", "O'Reilly Book Title"]}},
+        {{"day": 2, "topic": "Topic Name", "task": "Concrete task", "resources": ["https://url-1.com"]}},
+        {{"day": 3, "topic": "Topic Name", "task": "Concrete task", "resources": []}},
+        {{"day": 4, "topic": "Topic Name", "task": "Concrete task", "resources": []}},
+        {{"day": 5, "topic": "Topic Name", "task": "Concrete task", "resources": []}},
+        {{"day": 6, "topic": "Behavioral Polish", "task": "Practice STAR-method storytelling", "resources": []}},
+        {{"day": 7, "topic": "Mock Interview", "task": "Full mock interview", "resources": []}}
     ]
 }}
 
 Rules:
 - Each task must be specific and directly tied to one of the identified weaknesses.
 - Prioritize the most critical weaknesses in days 1–3.
+- IMPORTANT: You MUST provide at least 1-2 high-quality learning resources (official documentation, reputable tutorial links, or specific book chapters) for each day in the `resources` array.
 """
 
     try:
@@ -77,6 +78,7 @@ Rules:
                 "day": item.get("day", idx + 1),
                 "topic": item.get("topic", ""),
                 "task": item.get("task", ""),
+                "resources": item.get("resources", []),
             }
             for idx, item in enumerate(roadmap)
         ]

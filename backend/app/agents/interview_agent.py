@@ -9,6 +9,7 @@ def get_interviewer_response(
     history: list,
     current_focus: str,
     candidate_answer: str,
+    target_company: str = "",
     resume_context: dict | None = None,
     interview_plan: dict | None = None,
 ) -> str:
@@ -55,9 +56,11 @@ def get_interviewer_response(
         "probe deeply into domain-specific methodologies, strict standards, safety/compliance, or real-world practical scenarios. "
         "Do NOT output evaluation scores or internal notes — speak directly and naturally to the candidate. "
         "If the candidate asks you to repeat a question, rephrase it clearly. "
+        "IMPORTANT DIFFICULTY SCALING: The standard and depth of your questions MUST be dynamically scaled based on the target company. For example, if the company is a FAANG/top-tier tech company, ask extremely rigorous systems and core engineering questions. "
         "If your question requires the candidate to write code, algorithms, or snippets, you MUST include the exact tag [REQUIRES_CODE] at the very end of your response. "
         "Always align your question with the [Current Focus] specified by the system."
         + context_block
+        + (f"\nTARGET COMPANY: {target_company}" if target_company else "")
     )
 
     # Build message chain

@@ -3,7 +3,7 @@
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 
-type AppView = "upload" | "console" | "scorecard";
+type AppView = "dashboard" | "upload" | "console" | "scorecard";
 
 interface NavbarProps {
     currentView: AppView;
@@ -80,6 +80,14 @@ export default function Navbar({ currentView, userName, showSteps = true }: Navb
                                 <span className="hidden sm:block text-xs text-[var(--text-muted)] max-w-[120px] truncate">
                                     {userName}
                                 </span>
+                            )}
+                            {currentView !== "dashboard" && (
+                                <button
+                                    onClick={() => window.location.href = '/'}
+                                    className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-medium bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-muted)] hover:text-indigo-400 hover:border-indigo-500/40 transition-all mr-1"
+                                >
+                                    Dashboard
+                                </button>
                             )}
                             <button
                                 onClick={logout}

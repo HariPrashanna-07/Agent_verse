@@ -264,6 +264,7 @@ async def interview_turn(req: InterviewTurnRequest):
             history=history_dicts,
             current_focus=req.current_focus,
             candidate_answer=req.candidate_answer or "",
+            target_company=req.target_company or "",
             resume_context=req.resume_context,
             interview_plan=req.interview_plan,
         )

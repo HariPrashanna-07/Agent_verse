@@ -52,6 +52,7 @@ class InterviewTurnRequest(BaseModel):
     history: List[MessageItem] = []
     current_focus: str
     candidate_answer: Optional[str] = ""
+    target_company: Optional[str] = ""
     resume_context: Optional[dict] = None
     interview_plan: Optional[dict] = None
 
@@ -99,6 +100,7 @@ class RoadmapItem(BaseModel):
     day: int
     topic: str
     task: str
+    resources: List[str] = []
 
 
 class EvaluationOutput(BaseModel):
