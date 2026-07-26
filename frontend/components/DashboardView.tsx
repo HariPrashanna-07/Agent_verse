@@ -34,7 +34,8 @@ export default function DashboardView({ candidateId, token, onTakeInterview }: D
     useEffect(() => {
         async function fetchHistory() {
             try {
-                const res = await fetch(`http://localhost:8000/api/scorecards/${candidateId}`, {
+                const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+                const res = await fetch(`${API_BASE}/api/scorecards/${candidateId}`, {
                     headers: {
                         "Authorization": `Bearer ${token}`
                     }
