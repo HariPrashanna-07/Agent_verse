@@ -1,0 +1,322 @@
+@import "tailwindcss";
+
+/* ===== Design Tokens ===== */
+:root {
+  --bg-base: #090b10;
+  --bg-surface: #111420;
+  --bg-elevated: #181c2a;
+  --bg-highlight: #1e2336;
+
+  --accent: #6366f1;
+  /* indigo-500 */
+  --accent-light: #818cf8;
+  /* indigo-400 */
+  --accent-glow: rgba(99, 102, 241, 0.25);
+
+  --emerald: #10b981;
+  --emerald-glow: rgba(16, 185, 129, 0.2);
+
+  --rose: #f43f5e;
+  --rose-glow: rgba(244, 63, 94, 0.2);
+
+  --amber: #f59e0b;
+
+  --text-primary: #e8eaf6;
+  --text-secondary: #8b92b8;
+  --text-muted: #4b5280;
+
+  --border: rgba(99, 102, 241, 0.12);
+  --border-hover: rgba(99, 102, 241, 0.35);
+
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+/* ===== Base Reset ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* ===== Selection ===== */
+::selection {
+  background: var(--accent-glow);
+  color: var(--accent-light);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--accent-glow);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+@keyframes voiceWave {
+
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes ringDraw {
+  from {
+    stroke-dashoffset: 283;
+  }
+}
+
+/* ===== Utility Classes ===== */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease both;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease both;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.35s ease both;
+}
+
+.animate-voice-wave-1 {
+  animation: voiceWave 1.1s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+.animate-voice-wave-2 {
+  animation: voiceWave 1.1s ease-in-out infinite;
+  animation-delay: 0.15s;
+}
+
+.animate-voice-wave-3 {
+  animation: voiceWave 1.1s ease-in-out infinite;
+  animation-delay: 0.30s;
+}
+
+.animate-voice-wave-4 {
+  animation: voiceWave 1.1s ease-in-out infinite;
+  animation-delay: 0.45s;
+}
+
+.animate-voice-wave-5 {
+  animation: voiceWave 1.1s ease-in-out infinite;
+  animation-delay: 0.60s;
+}
+
+.animate-spin-slow {
+  animation: spin 1s linear infinite;
+}
+
+.animate-ring {
+  animation: ringDraw 1s ease forwards;
+}
+
+.glass {
+  background: rgba(24, 28, 42, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+.glow-accent {
+  box-shadow: 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 16px var(--emerald-glow);
+}
+
+.surface-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.surface-elevated {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent-light), #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-btn {
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+}
+
+.gradient-btn:hover {
+  background: linear-gradient(135deg, var(--accent-light), #8b5cf6);
+}
+
+/* Dropzone drag-over state */
+.dropzone-active {
+  border-color: var(--accent) !important;
+  background: rgba(99, 102, 241, 0.05) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow), inset 0 0 30px var(--accent-glow);
+}
+
+/* Chat bubbles */
+.chat-bubble-assistant {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-bubble-user {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(124, 58, 237, 0.1));
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-bottom-right-radius: 4px;
+}
+
+/* Roadmap timeline */
+.timeline-line {
+  background: linear-gradient(to bottom, var(--accent), #7c3aed, var(--emerald));
+}
+
+/* ===== Print Styles (PDF Export) ===== */
+@media print {
+
+  /* Force dark mode background and exact colors */
+  html,
+  body {
+    background: #090b10 !important;
+    color: #e8eaf6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Hide UI elements not meant for PDF */
+  .no-print,
+  nav,
+  header {
+    display: none !important;
+  }
+
+  /* Remove margins and padding from main layout if necessary */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Ensure cards print their backgrounds */
+  .surface-card,
+  .surface-elevated {
+    background: #111420 !important;
+    border-color: rgba(99, 102, 241, 0.4) !important;
+  }
+
+  /* Prevent page breaks inside cards */
+  .surface-card,
+  .surface-elevated,
+  li,
+  .grid>div {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
