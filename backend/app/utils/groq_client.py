@@ -1,12 +1,15 @@
-import os
 from groq import Groq
-from dotenv import load_dotenv
+from backend.app.config import settings
 
-load_dotenv()
+# Module-level singleton — created once, reused across all requests
+_groq_client: Groq | None = None
+
 
 def get_groq_client() -> Groq:
-    """Centralized factory to return the initialized Groq client."""
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        raise ValueError("GROQ_API_KEY is missing from environment variables.")
-    return Groq(api_key=api_key)
+    """Return the shared Groq client singleton."""
+    global _groq_client
+    if _groq_client is None:
+        if not settings.groq_configured:
+            raise ValueError("GROQ_API_KEY is missing from environment variables.")
+        _groq_client = Groq(api_key=settings.GROQ_API_KEY)
+    return _groq_client
