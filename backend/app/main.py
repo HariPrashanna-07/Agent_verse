@@ -23,6 +23,8 @@ from backend.app.models.schemas import (
     AuthResponse,
     SaveScorecardRequest,
     ScorecardHistoryResponse,
+    ChatRequest,
+    ChatResponse,
 )
 from backend.app.utils.pdf_parser import extract_text_from_pdf_bytes
 from backend.app.utils.s3_uploader import upload_pdf_to_s3
@@ -68,7 +70,7 @@ logger = logging.getLogger("agentverse")
 # App factory
 # ---------------------------------------------------------------------------
 app = FastAPI(
-    title="AgentVerse API",
+    title="PrepAI API",
     description=(
         "Multi-Agent Mock Interview Backend — powered by Groq LLMs & AWS S3/DynamoDB. "
         "Visit /docs for interactive Swagger UI."
@@ -93,7 +95,7 @@ app.add_middleware(
 def read_root():
     return {
         "status": "online",
-        "service": "AgentVerse Multi-Agent Engine",
+        "service": "PrepAI Multi-Agent Engine",
         "version": settings.APP_VERSION,
         "docs_url": "/docs",
     }
@@ -394,3 +396,63 @@ async def generate_speech(req: TTSRequest):
     except Exception as e:
         logger.error("TTS generation failed: %s", str(e))
         raise HTTPException(status_code=500, detail="Voice generation failed.")
+
+
+# ===========================================================================
+# AI Chatbot (general-purpose assistant)
+# ===========================================================================
+
+from groq import Groq as GroqClient
+
+_groq_client = GroqClient(api_key=settings.GROQ_API_KEY) if settings.GROQ_API_KEY else None
+
+_CHATBOT_SYSTEM = """
+You are the PrepAI Study & Interview Assistant — a focused AI coach embedded in the PrepAI interview-prep platform.
+
+STRICT SCOPE — you may ONLY answer questions related to:
+- Interview preparation (technical, behavioural, HR rounds)
+- Study plans and learning strategies for CS, engineering, finance, or any professional domain
+- Data structures, algorithms, system design, coding problems
+- Resume writing, formatting, and improvement tips
+- Career advice (which role to target, skill gaps, how to grow in a field)
+- Domain-specific knowledge relevant to job interviews (e.g. OS, networking, DBMS, OOP, finance, circuits)
+- How to use the PrepAI platform (scorecard, roadmap, upload, settings)
+
+OUT OF SCOPE — politely decline anything unrelated to studying or interviews, such as:
+- General chat, jokes, creative writing, or personal conversations
+- News, sports, weather, cooking, movies, travel, or any non-academic topic
+- Code generation for personal projects (unless it's a practice problem or interview question)
+
+When a question is out of scope, respond with exactly this pattern:
+"I'm only able to help with study and interview-related questions. Could you ask me something about interview prep, career advice, or a topic you're studying?"
+
+RESPONSE STYLE:
+- Be concise, warm, and encouraging
+- Use bullet points for lists
+- Keep answers under 300 words unless the user explicitly asks for a detailed explanation
+- For coding/DSA questions, show code examples when helpful
+"""
+
+
+@app.post("/api/chat", response_model=ChatResponse, tags=["Chatbot"])
+async def chatbot(req: ChatRequest):
+    """General-purpose AI career assistant — no auth required."""
+    if not _groq_client:
+        raise HTTPException(status_code=503, detail="Groq API key not configured.")
+
+    try:
+        messages = [{"role": "system", "content": _CHATBOT_SYSTEM}]
+        for m in req.messages:
+            messages.append({"role": m.role, "content": m.content})
+
+        completion = _groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",  # Fast enough for casual chat; 70B budget saved for eval/planner
+            messages=messages,
+            temperature=0.7,
+            max_tokens=512,
+        )
+        reply = completion.choices[0].message.content or ""
+        return ChatResponse(reply=reply)
+    except Exception as exc:
+        logger.exception("chatbot failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Chatbot error — please try again.")

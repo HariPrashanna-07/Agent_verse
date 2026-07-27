@@ -77,7 +77,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                         </div>
                     </div>
                     <Badge variant="accent">AI-Powered Interview Platform</Badge>
-                    <h1 className="text-3xl font-bold gradient-text">AgentVerse</h1>
+                    <h1 className="text-3xl font-bold gradient-text">PrepAI</h1>
                     <p className="text-[var(--text-secondary)] text-sm">
                         {tab === "login" ? "Sign in to continue your interview journey." : "Create your candidate account."}
                     </p>
@@ -114,7 +114,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                                 <input
                                     id="name-input"
                                     type="text"
-                                    placeholder="Hari Prashanna"
+                                    placeholder="Username"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     onKeyDown={handleKey}

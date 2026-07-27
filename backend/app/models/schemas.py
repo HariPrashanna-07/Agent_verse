@@ -149,6 +149,23 @@ class RoadmapResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Chatbot
+# ---------------------------------------------------------------------------
+
+class ChatMessage(BaseModel):
+    role: str = Field(..., description="'user' or 'assistant'")
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage] = Field(..., min_length=1)
+
+
+class ChatResponse(BaseModel):
+    reply: str
+
+
+# ---------------------------------------------------------------------------
 # Health Check
 # ---------------------------------------------------------------------------
 

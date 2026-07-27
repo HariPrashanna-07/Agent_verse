@@ -164,6 +164,30 @@ body {
   }
 }
 
+@keyframes slideUpChat {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideInSettings {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 /* ===== Utility Classes ===== */
 .animate-fade-in {
   animation: fadeIn 0.4s ease both;

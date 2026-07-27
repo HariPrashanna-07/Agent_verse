@@ -388,16 +388,25 @@ export default function ConsoleView({
                             </span>
                         </button>
                     )}
-                    <Button
-                        id="end-interview-btn"
-                        variant="danger"
-                        size="sm"
-                        onClick={endInterview}
-                        loading={isEnding}
-                        disabled={messages.length < 2}
-                    >
-                        {isEnding ? "Evaluating…" : "End Interview"}
-                    </Button>
+                    {/* End Interview — visible only after 5 exchanges */}
+                    {turnCount >= 5 ? (
+                        <Button
+                            id="end-interview-btn"
+                            variant="danger"
+                            size="sm"
+                            onClick={endInterview}
+                            loading={isEnding}
+                        >
+                            {isEnding ? "Evaluating…" : "End Interview"}
+                        </Button>
+                    ) : (
+                        <div className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium bg-[var(--bg-highlight)] border border-[var(--border)] text-[var(--text-muted)]" title={`End Interview unlocks after 5 exchanges (${5 - turnCount} remaining)`}>
+                            <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                            </svg>
+                            <span className="hidden sm:inline">{5 - turnCount} more exchange{5 - turnCount !== 1 ? "s" : ""}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 

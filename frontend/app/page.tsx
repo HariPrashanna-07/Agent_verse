@@ -8,6 +8,8 @@ import UploadView from "@/components/UploadView";
 import ConsoleView from "@/components/ConsoleView";
 import ScorecardView from "@/components/ScorecardView";
 import DashboardView from "@/components/DashboardView";
+import ChatbotWidget from "@/components/ChatbotWidget";
+import SettingsPanel, { loadSettings, applySettings, type AppSettings } from "@/components/SettingsPanel";
 
 type AppView = "login" | "dashboard" | "upload" | "console" | "scorecard";
 
@@ -36,6 +38,11 @@ function AppInner() {
   const [view, setView] = useState<AppView>("login");
   const [session, setSession] = useState<SessionData | null>(null);
   const [evaluation, setEvaluation] = useState<EvaluationData | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState<AppSettings>(loadSettings);
+
+  // Apply stored settings on first mount
+  useEffect(() => { applySettings(settings); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle view transitions based on auth state
   useEffect(() => {
@@ -65,6 +72,12 @@ function AppInner() {
     setView("scorecard");
   };
 
+  // Called when user clicks "View Report" on a dashboard history card
+  const handleViewHistoryScorecard = (evalData: EvaluationData) => {
+    setEvaluation(evalData);
+    setView("scorecard");
+  };
+
   const handleRetake = () => {
     setSession(null);
     setEvaluation(null);
@@ -77,15 +90,17 @@ function AppInner() {
     return plan?.plan?.[0]?.focus ?? "General";
   })();
 
-  // The Navbar only shows step progress for non-login and non-dashboard views
-  const navView = (view === "login" || view === "dashboard") ? "upload" : view;
+  // Step indicator only shows during the active interview flow (upload → console → scorecard)
+  const isInterviewFlow = view === "upload" || view === "console" || view === "scorecard";
+  const navView = isInterviewFlow ? view : "upload";
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-base)]">
       <Navbar
         currentView={navView as "upload" | "console" | "scorecard"}
         userName={user?.name}
-        showSteps={view !== "login"}
+        showSteps={isInterviewFlow}
+        onOpenSettings={isAuthenticated ? () => setSettingsOpen(true) : undefined}
       />
 
       {view === "login" && <LoginView onLoginSuccess={handleLoginSuccess} />}
@@ -95,6 +110,7 @@ function AppInner() {
           candidateId={user.candidateId}
           token={token ?? ""}
           onTakeInterview={() => setView("upload")}
+          onViewScorecard={handleViewHistoryScorecard}
         />
       )}
 
@@ -123,6 +139,17 @@ function AppInner() {
           onRetake={handleRetake}
         />
       )}
+
+      {/* Chatbot: visible when authenticated, hidden during live interview */}
+      {isAuthenticated && view !== "console" && <ChatbotWidget />}
+
+      {/* Settings slide-over */}
+      <SettingsPanel
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        settings={settings}
+        onSettingsChange={setSettings}
+      />
     </div>
   );
 }

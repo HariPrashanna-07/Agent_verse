@@ -56,7 +56,10 @@ def get_interviewer_response(
     Generate the next interviewer question using conversation history and
     rich role-type / company-difficulty context.
 
-    Uses llama-3.1-8b-instant for sub-second latency.
+    Uses meta-llama/llama-4-scout-17b-16e-instruct:
+    - Superior multi-turn instruction following for real-time interview turns
+    - Better at maintaining persona and question ordering than 8B models
+    - Still fast enough for sub-second live interview responses
     """
     client = get_groq_client()
 

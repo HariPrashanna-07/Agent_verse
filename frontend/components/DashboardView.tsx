@@ -11,6 +11,8 @@ interface EvaluationData {
     };
     strengths: string[];
     weaknesses: string[];
+    detailed_feedback?: string[];
+    roadmap?: { day: number; topic: string; task: string }[];
 }
 
 interface Scorecard {
@@ -24,9 +26,10 @@ interface DashboardViewProps {
     candidateId: string;
     token: string;
     onTakeInterview: () => void;
+    onViewScorecard: (evaluation: EvaluationData) => void;
 }
 
-export default function DashboardView({ candidateId, token, onTakeInterview }: DashboardViewProps) {
+export default function DashboardView({ candidateId, token, onTakeInterview, onViewScorecard }: DashboardViewProps) {
     const [scorecards, setScorecards] = useState<Scorecard[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -43,8 +46,8 @@ export default function DashboardView({ candidateId, token, onTakeInterview }: D
                 if (!res.ok) throw new Error("Failed to fetch history");
                 const data = await res.json();
                 setScorecards(data.scorecards || []);
-            } catch (err: any) {
-                setError(err.message || "An error occurred");
+            } catch (err: unknown) {
+                setError(err instanceof Error ? err.message : "An error occurred");
             } finally {
                 setLoading(false);
             }
@@ -55,6 +58,11 @@ export default function DashboardView({ candidateId, token, onTakeInterview }: D
         }
     }, [candidateId, token]);
 
+    const scoreColor = (s: number) =>
+        s >= 80 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-rose-400";
+    const ringColor = (s: number) =>
+        s >= 80 ? "text-emerald-500" : s >= 60 ? "text-amber-500" : "text-rose-500";
+
     return (
         <div className="flex-1 max-w-6xl w-full mx-auto p-6 md:p-12 animate-fade-in flex flex-col gap-10">
 
@@ -62,7 +70,7 @@ export default function DashboardView({ candidateId, token, onTakeInterview }: D
             <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl p-8 lg:p-12 flex flex-col items-center text-center shadow-lg relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 pointer-events-none" />
                 <h1 className="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">
-                    Welcome to your <span className="gradient-text">AgentVerse</span> Dashboard
+                    Welcome to your <span className="gradient-text">PrepAI</span> Dashboard
                 </h1>
                 <p className="text-[var(--text-muted)] text-base md:text-lg max-w-2xl mb-8 leading-relaxed">
                     Ready to level up your interview skills? Take a highly realistic mock interview powered by our multi-agent AI system.
@@ -93,7 +101,7 @@ export default function DashboardView({ candidateId, token, onTakeInterview }: D
                 </div>
 
                 {loading ? (
-                    <div className="h-40 flex items-center justify-center text-[var(--text-muted)] border border-[var(--border-light)] rounded-xl border-dashed">
+                    <div className="h-40 flex items-center justify-center text-[var(--text-muted)] border border-[var(--border)] rounded-xl border-dashed">
                         <div className="animate-spin w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full mr-3" />
                         Loading history...
                     </div>
@@ -111,13 +119,22 @@ export default function DashboardView({ candidateId, token, onTakeInterview }: D
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {scorecards.map((card, idx) => (
-                            <div key={idx} className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl p-6 flex flex-col gap-4 hover:border-indigo-500/40 hover:shadow-lg transition-all group relative overflow-hidden">
+                            <div
+                                key={idx}
+                                className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl p-6 flex flex-col gap-4 hover:border-indigo-500/40 hover:shadow-lg transition-all group relative overflow-hidden cursor-pointer"
+                                onClick={() => onViewScorecard(card.evaluation)}
+                                title="Click to view full report"
+                            >
+                                {/* Hover overlay hint */}
+                                <div className="absolute inset-0 bg-indigo-500/0 group-hover:bg-indigo-500/[0.03] transition-all rounded-xl pointer-events-none" />
+
+                                {/* Score ring */}
                                 <div className="absolute top-0 right-0 p-4">
                                     <div className="w-12 h-12 rounded-full border-4 border-emerald-500/20 flex items-center justify-center relative shadow-sm">
-                                        <span className="text-emerald-400 font-bold text-sm tracking-tighter">
+                                        <span className={`font-bold text-sm tracking-tighter ${scoreColor(card.evaluation.scores.overall)}`}>
                                             {card.evaluation.scores.overall}%
                                         </span>
-                                        <svg className="absolute inset-0 w-full h-full -rotate-90 text-emerald-500" viewBox="0 0 36 36">
+                                        <svg className={`absolute inset-0 w-full h-full -rotate-90 ${ringColor(card.evaluation.scores.overall)}`} viewBox="0 0 36 36">
                                             <path
                                                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                                 fill="none"
@@ -150,6 +167,20 @@ export default function DashboardView({ candidateId, token, onTakeInterview }: D
                                     <p className="text-sm text-[var(--text-primary)] line-clamp-2 leading-relaxed">
                                         {card.evaluation.strengths?.[0] || "Solid overall performance."}
                                     </p>
+                                </div>
+
+                                {/* View Report button */}
+                                <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]">
+                                    <div className="flex gap-3 text-xs text-[var(--text-muted)]">
+                                        <span>Tech: <span className={`font-semibold ${scoreColor(card.evaluation.scores.technical_accuracy)}`}>{card.evaluation.scores.technical_accuracy}%</span></span>
+                                        <span>Comm: <span className={`font-semibold ${scoreColor(card.evaluation.scores.communication)}`}>{card.evaluation.scores.communication}%</span></span>
+                                    </div>
+                                    <span className="text-xs font-semibold text-indigo-400 group-hover:text-indigo-300 flex items-center gap-1 transition-colors">
+                                        View Report
+                                        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                        </svg>
+                                    </span>
                                 </div>
                             </div>
                         ))}

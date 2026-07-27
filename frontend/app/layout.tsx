@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AgentVerse — AI Mock Interviewer",
+  title: "PrepAI — AI Mock Interviewer",
   description:
     "Multi-agent AI interview platform. Upload your resume, get adaptive questions, and receive a detailed scorecard with a personalised 7-day study roadmap.",
 };
