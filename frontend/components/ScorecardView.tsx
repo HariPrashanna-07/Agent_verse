@@ -23,7 +23,7 @@ interface Evaluation {
     strengths: string[];
     weaknesses: string[];
     detailed_feedback?: string[];
-    roadmap: RoadmapDay[];
+    roadmap?: RoadmapDay[];
 }
 
 interface ScorecardViewProps {
@@ -40,7 +40,7 @@ function ScoreGrade(score: number) {
 }
 
 export default function ScorecardView({ evaluation, candidateId, onRetake }: ScorecardViewProps) {
-    const { scores, strengths, weaknesses, detailed_feedback = [], roadmap } = evaluation;
+    const { scores, strengths, weaknesses, detailed_feedback = [], roadmap = [] } = evaluation;
     const grade = ScoreGrade(scores.overall);
 
     const handleDownload = () => {
@@ -171,7 +171,7 @@ export default function ScorecardView({ evaluation, candidateId, onRetake }: Sco
             )}
 
             {/* ── 7-Day Roadmap ── */}
-            <div className="surface-card p-5 space-y-5 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            {roadmap.length > 0 && <div className="surface-card p-5 space-y-5 animate-slide-up" style={{ animationDelay: "0.2s" }}>
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-violet-500/15 border border-violet-500/30 flex items-center justify-center">
                         <svg className="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -223,7 +223,7 @@ export default function ScorecardView({ evaluation, candidateId, onRetake }: Sco
                         })}
                     </div>
                 </div>
-            </div>
+            </div>}
 
             {/* ── CTA ── */}
             <div className="no-print flex flex-col sm:flex-row gap-3 justify-center pb-4 animate-slide-up" style={{ animationDelay: "0.28s" }}>

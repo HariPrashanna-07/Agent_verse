@@ -30,7 +30,7 @@ interface EvaluationData {
   strengths: string[];
   weaknesses: string[];
   detailed_feedback?: string[];
-  roadmap: { day: number; topic: string; task: string }[];
+  roadmap?: { day: number; topic: string; task: string }[];
 }
 
 function AppInner() {
