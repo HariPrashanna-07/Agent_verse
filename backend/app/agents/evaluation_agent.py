@@ -157,7 +157,7 @@ Target Role: {target_role}
 
 {role_type_guidance}
 
-Carefully review every exchange in the following transcript and produce a comprehensive, brutally honest evaluation.
+Carefully review every exchange in the following transcript and produce a comprehensive, constructively critical evaluation.
 
 TRANSCRIPT:
 {json.dumps(transcript, indent=2)}
@@ -193,7 +193,8 @@ Return ONLY a valid raw JSON object matching exactly this schema:
 }}
 
 Rules:
-- STRICT SCORING: Be extremely strict and critical. Do not inflate scores.
+- INCOMPLETE INTERVIEWS: If the transcript is extremely short (e.g., fewer than 2 back-and-forth exchanges or the candidate just introduced themselves and exited), DO NOT penalise them harshly for missing technical content. Instead, set all scores to 0, and in the `strengths`, `weaknesses`, and `detailed_feedback`, politely mention that the interview was too short to evaluate their skills fully. Provide a generic, easy `roadmap` aimed at starting interview prep.
+- STRICT SCORING: For complete interviews, be strictly objective and constructive. Do not inflate scores.
   - 0–40: Very poor — fundamental gaps, could not answer basic questions
   - 40–60: Below average — significant weaknesses, superficial answers
   - 60–75: Average — adequate but lacks depth, missed key points
@@ -202,7 +203,7 @@ Rules:
   - 95–100: Exceptional — near-perfect, every answer was insightful and complete
 - All scores must be integers between 0 and 100.
 - `detailed_feedback` must have one item per interviewer question referencing the candidate's specific answer.
-  Point out flaws, omissions, and lack of depth strictly.
+  Point out flaws, omissions, and lack of depth objectively.
 - `roadmap` must have exactly 7 items (day 1–7), targeted squarely at the identified weaknesses.
 - Roadmap tasks for software roles should reference LeetCode, system design resources, etc.
 - Roadmap tasks for core roles should reference domain standards, textbooks, or professional certifications.
