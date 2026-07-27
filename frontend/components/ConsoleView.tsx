@@ -335,6 +335,24 @@ export default function ConsoleView({
         }
     };
 
+    // ── Fullscreen Enforcer ──────────────────────────────────────────────────
+    const endInterviewRef = useRef(endInterview);
+    useEffect(() => {
+        endInterviewRef.current = endInterview;
+    }, [endInterview]);
+
+    useEffect(() => {
+        const onFullscreenChange = () => {
+            if (!document.fullscreenElement && !isEnding) {
+                console.log("User exited fullscreen. Ending interview automatically.");
+                endInterviewRef.current();
+            }
+        };
+
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+        return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+    }, [isEnding]);
+
     const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
     return (

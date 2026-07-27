@@ -69,6 +69,13 @@ export default function UploadView({ onInterviewStart }: UploadViewProps) {
         setError("");
 
         try {
+            // Request Fullscreen immediately on form submission (synchronously within the click handler)
+            if (typeof document !== 'undefined' && document.documentElement.requestFullscreen) {
+                await document.documentElement.requestFullscreen().catch(err => {
+                    console.warn("Fullscreen request failed", err);
+                });
+            }
+
             /* Step 1 — process-resume */
             setStatus("uploading");
             const form = new FormData();
