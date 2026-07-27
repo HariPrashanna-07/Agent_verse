@@ -4,30 +4,12 @@ import React from "react";
 import ProgressRing from "./ui/ProgressRing";
 import Badge from "./ui/Badge";
 import Button from "./ui/Button";
+import type { EvaluationData } from "@/types";
 
-interface RoadmapDay {
-    day: number;
-    topic: string;
-    task: string;
-}
 
-interface Scores {
-    overall: number;
-    technical_accuracy: number;
-    communication: number;
-    problem_solving: number;
-}
-
-interface Evaluation {
-    scores: Scores;
-    strengths: string[];
-    weaknesses: string[];
-    detailed_feedback?: string[];
-    roadmap?: RoadmapDay[];
-}
 
 interface ScorecardViewProps {
-    evaluation: Evaluation;
+    evaluation: EvaluationData;
     candidateId?: string;
     onRetake: () => void;
 }

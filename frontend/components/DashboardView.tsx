@@ -1,19 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import type { EvaluationData } from "@/types";
 
-interface EvaluationData {
-    scores: {
-        overall: number;
-        technical_accuracy: number;
-        communication: number;
-        problem_solving: number;
-    };
-    strengths: string[];
-    weaknesses: string[];
-    detailed_feedback?: string[];
-    roadmap?: { day: number; topic: string; task: string }[];
-}
 
 interface Scorecard {
     target_role: string;

@@ -10,6 +10,7 @@ import ScorecardView from "@/components/ScorecardView";
 import DashboardView from "@/components/DashboardView";
 import ChatbotWidget from "@/components/ChatbotWidget";
 import SettingsPanel, { loadSettings, applySettings, type AppSettings } from "@/components/SettingsPanel";
+import type { EvaluationData } from "@/types";
 
 type AppView = "login" | "dashboard" | "upload" | "console" | "scorecard";
 
@@ -20,18 +21,7 @@ interface SessionData {
   sessionContext: Record<string, unknown>;
 }
 
-interface EvaluationData {
-  scores: {
-    overall: number;
-    technical_accuracy: number;
-    communication: number;
-    problem_solving: number;
-  };
-  strengths: string[];
-  weaknesses: string[];
-  detailed_feedback?: string[];
-  roadmap?: { day: number; topic: string; task: string }[];
-}
+
 
 function AppInner() {
   const { isAuthenticated, user, token } = useAuth();
