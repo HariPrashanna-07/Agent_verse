@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Button from "./ui/Button";
 import Badge from "./ui/Badge";
 import { useVoice } from "@/hooks/useVoice";
+import type { InterviewEvaluationData } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || (typeof window !== "undefined" && window.location.hostname === "localhost" ? "http://localhost:8000" : "");
 
@@ -23,7 +24,7 @@ interface ConsoleViewProps {
     targetCompany?: string;
     candidateId: string;
     token: string;
-    onInterviewEnd: (evaluation: Record<string, unknown>) => void;
+    onInterviewEnd: (evaluation: InterviewEvaluationData) => void;
 }
 
 // ── Animated VoiceWave (decorative, always shown beside AI label) ───────────
