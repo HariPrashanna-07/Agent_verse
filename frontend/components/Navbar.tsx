@@ -98,14 +98,7 @@ export default function Navbar({ currentView, userName, showSteps = true, onOpen
                                 </button>
                             )}
 
-                            {currentView !== "dashboard" && (
-                                <button
-                                    onClick={() => window.location.href = '/'}
-                                    className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-medium bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-muted)] hover:text-indigo-400 hover:border-indigo-500/40 transition-all mr-1"
-                                >
-                                    Dashboard
-                                </button>
-                            )}
+
                             <button
                                 onClick={logout}
                                 className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-medium bg-[var(--bg-highlight)] border border-[var(--border)] text-[var(--text-muted)] hover:text-rose-300 hover:border-rose-500/40 transition-all"
