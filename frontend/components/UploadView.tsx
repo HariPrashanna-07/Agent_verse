@@ -11,6 +11,7 @@ interface UploadViewProps {
         resumeAnalysis: Record<string, unknown>;
         interviewPlan: Record<string, unknown>;
         openingQuestion: string;
+        openingEmotion?: string;
         sessionContext: Record<string, unknown>;
     }) => void;
 }
@@ -117,6 +118,7 @@ export default function UploadView({ onInterviewStart }: UploadViewProps) {
                 resumeAnalysis: resumeData.resume_analysis,
                 interviewPlan: resumeData.interview_plan,
                 openingQuestion: startData.opening_question,
+                openingEmotion: startData.opening_emotion,
                 sessionContext: startData.session_context,
             });
         } catch (err: unknown) {

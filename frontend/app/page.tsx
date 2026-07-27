@@ -18,6 +18,7 @@ interface SessionData {
   resumeAnalysis: Record<string, unknown>;
   interviewPlan: Record<string, unknown>;
   openingQuestion: string;
+  openingEmotion?: string;
   sessionContext: Record<string, unknown>;
 }
 
@@ -51,13 +52,14 @@ function AppInner() {
     resumeAnalysis: Record<string, unknown>;
     interviewPlan: Record<string, unknown>;
     openingQuestion: string;
+    openingEmotion?: string;
     sessionContext: Record<string, unknown>;
   }) => {
     setSession(data);
     setView("console");
   };
 
-  const handleInterviewEnd = (evalData: Record<string, unknown>) => {
+  const handleInterviewEnd = (evalData: InterviewEvaluationData) => {
     setEvaluation(evalData as unknown as InterviewEvaluationData);
     setView("scorecard");
   };
@@ -111,6 +113,7 @@ function AppInner() {
       {view === "console" && session && (
         <ConsoleView
           openingQuestion={session.openingQuestion}
+          openingEmotion={session.openingEmotion}
           currentFocus={currentFocus}
           resumeContext={session.resumeAnalysis}
           interviewPlan={session.interviewPlan}

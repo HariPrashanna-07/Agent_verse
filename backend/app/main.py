@@ -256,6 +256,7 @@ async def start_interview(req: StartInterviewRequest):
         return StartInterviewResponse(
             status="success",
             opening_question=opening_question,
+            opening_emotion="👋",
             session_context=session_context,
         )
     except Exception as exc:
@@ -268,7 +269,7 @@ async def interview_turn(req: InterviewTurnRequest):
     """Generate the next interviewer question/follow-up based on conversation history."""
     try:
         history_dicts = [{"sender": m.sender, "text": m.text} for m in req.history]
-        response_text = get_interviewer_response(
+        turn_data = get_interviewer_response(
             history=history_dicts,
             current_focus=req.current_focus,
             candidate_answer=req.candidate_answer or "",
@@ -277,7 +278,11 @@ async def interview_turn(req: InterviewTurnRequest):
             resume_context=req.resume_context,
             interview_plan=req.interview_plan,
         )
-        return InterviewTurnResponse(status="success", interviewer_response=response_text)
+        return InterviewTurnResponse(
+            status="success", 
+            interviewer_response=turn_data["response"], 
+            emotion=turn_data["emotion"]
+        )
     except Exception as exc:
         logger.exception("interview-turn failed: %s", exc)
         raise HTTPException(status_code=500, detail=str(exc))

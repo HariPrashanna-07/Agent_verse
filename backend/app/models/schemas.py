@@ -61,6 +61,7 @@ class InterviewTurnRequest(BaseModel):
 class InterviewTurnResponse(BaseModel):
     status: str
     interviewer_response: str
+    emotion: Optional[str] = "😐"
 
 
 # ---------------------------------------------------------------------------
@@ -77,6 +78,7 @@ class StartInterviewRequest(BaseModel):
 class StartInterviewResponse(BaseModel):
     status: str
     opening_question: str
+    opening_emotion: Optional[str] = "👋"
     session_context: dict
 
 
