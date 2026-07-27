@@ -4,7 +4,7 @@ export interface RoadmapDay {
     task: string;
 }
 
-export interface EvaluationData {
+export interface InterviewEvaluationData {
     scores: {
         overall: number;
         technical_accuracy: number;

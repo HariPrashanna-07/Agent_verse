@@ -4,12 +4,12 @@ import React from "react";
 import ProgressRing from "./ui/ProgressRing";
 import Badge from "./ui/Badge";
 import Button from "./ui/Button";
-import type { EvaluationData } from "@/types";
+import type { InterviewEvaluationData } from "@/types";
 
 
 
 interface ScorecardViewProps {
-    evaluation: EvaluationData;
+    evaluation: InterviewEvaluationData;
     candidateId?: string;
     onRetake: () => void;
 }

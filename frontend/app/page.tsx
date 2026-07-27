@@ -10,7 +10,7 @@ import ScorecardView from "@/components/ScorecardView";
 import DashboardView from "@/components/DashboardView";
 import ChatbotWidget from "@/components/ChatbotWidget";
 import SettingsPanel, { loadSettings, applySettings, type AppSettings } from "@/components/SettingsPanel";
-import type { EvaluationData } from "@/types";
+import type { InterviewEvaluationData } from "@/types";
 
 type AppView = "login" | "dashboard" | "upload" | "console" | "scorecard";
 
@@ -27,7 +27,7 @@ function AppInner() {
   const { isAuthenticated, user, token } = useAuth();
   const [view, setView] = useState<AppView>("login");
   const [session, setSession] = useState<SessionData | null>(null);
-  const [evaluation, setEvaluation] = useState<EvaluationData | null>(null);
+  const [evaluation, setEvaluation] = useState<InterviewEvaluationData | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
 
@@ -58,12 +58,12 @@ function AppInner() {
   };
 
   const handleInterviewEnd = (evalData: Record<string, unknown>) => {
-    setEvaluation(evalData as unknown as EvaluationData);
+    setEvaluation(evalData as unknown as InterviewEvaluationData);
     setView("scorecard");
   };
 
   // Called when user clicks "View Report" on a dashboard history card
-  const handleViewHistoryScorecard = (evalData: EvaluationData) => {
+  const handleViewHistoryScorecard = (evalData: InterviewEvaluationData) => {
     setEvaluation(evalData);
     setView("scorecard");
   };

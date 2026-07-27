@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import type { EvaluationData } from "@/types";
+import type { InterviewEvaluationData } from "@/types";
 
 
 interface Scorecard {
     target_role: string;
     target_company: string;
-    evaluation: EvaluationData;
+    evaluation: InterviewEvaluationData;
     created_at: string;
 }
 
@@ -15,7 +15,7 @@ interface DashboardViewProps {
     candidateId: string;
     token: string;
     onTakeInterview: () => void;
-    onViewScorecard: (evaluation: EvaluationData) => void;
+    onViewScorecard: (evaluation: InterviewEvaluationData) => void;
 }
 
 export default function DashboardView({ candidateId, token, onTakeInterview, onViewScorecard }: DashboardViewProps) {
