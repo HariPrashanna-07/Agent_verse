@@ -1,6 +1,6 @@
-# AgentVerse
+# PrepAI
 
-**AgentVerse** is a high-fidelity, role-aware, AI-powered interview simulator. It leverages a multi-agent architectural pipeline to conduct real-time, dynamic technical and behavioral interviews tailored to a candidate's specific background and the target company's difficulty tier.
+**PrepAI** is a high-fidelity, role-aware, AI-powered interview simulator. It leverages a multi-agent architectural pipeline to conduct real-time, dynamic technical and behavioral interviews tailored to a candidate's specific background and the target company's difficulty tier.
 
 ## Core Features
 
@@ -92,4 +92,4 @@ The platform uses a suite of specialized AI agents to orchestrate the interview 
    ```
 
 ## Deployment
-AgentVerse is configured as a monorepo explicitly supporting **Vercel** multi-service routing via `vercel.json`. 
+PrepAI is configured as a monorepo explicitly supporting **Vercel** multi-service routing via `vercel.json`. 
