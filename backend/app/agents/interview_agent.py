@@ -51,7 +51,7 @@ def get_interviewer_response(
     target_role: str = "",
     resume_context: dict | None = None,
     interview_plan: dict | None = None,
-) -> dict:
+) -> str:
     """
     Generate the next interviewer question using conversation history and
     rich role-type / company-difficulty context.
@@ -149,9 +149,6 @@ def get_interviewer_response(
         "- Briefly acknowledge the candidate's answer in ONE sentence before moving to your next question "
         "(e.g. 'Good point on the trade-offs.' or 'Interesting approach.').\n"
         "- Do NOT output scores, ratings, or internal evaluation notes — speak directly to the candidate.\n"
-        "- You MUST respond in valid JSON matching exactly this structure: {\"emotion\": \"🤔\", \"response\": \"...\"}\n"
-        "- The 'emotion' property must be ONLY ONE EMOJI reflecting your reaction to the candidate (e.g. 😐, 😊, 🤔, 🤨, 😠, 👏).\n"
-        "- The 'response' property must contain your actual dialogue.\n"
         "- If the candidate asks you to repeat a question, rephrase it clearly.\n"
         "- Follow the interview plan's question order as closely as possible.\n"
         "- Always align your question with the [Current Focus] specified below.\n\n"
@@ -187,18 +184,9 @@ def get_interviewer_response(
             messages=formatted_messages,
             temperature=0.7,
             max_tokens=600,
-            response_format={"type": "json_object"},
         )
-        raw = response.choices[0].message.content.strip()
-        data = json.loads(raw)
-        return {
-            "emotion": data.get("emotion", "😐"),
-            "response": data.get("response", "I apologize, could you repeat that?"),
-        }
+        return response.choices[0].message.content.strip()
 
     except Exception as exc:
         logger.error("Interview agent failed: %s", exc)
-        return {
-            "emotion": "😐", 
-            "response": "I apologize, I'm having a technical issue. Could you please repeat your answer?"
-        }
+        return "I apologize, I'm having a technical issue. Could you please repeat your answer?"

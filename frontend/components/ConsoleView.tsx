@@ -13,12 +13,10 @@ interface Message {
     sender: "assistant" | "user";
     text: string;
     timestamp: Date;
-    emotion?: string;
 }
 
 interface ConsoleViewProps {
     openingQuestion: string;
-    openingEmotion?: string;
     currentFocus: string;
     resumeContext: Record<string, unknown>;
     interviewPlan: Record<string, unknown>;
@@ -144,7 +142,6 @@ function ReplayButton({ onClick, active }: { onClick: () => void; active: boolea
 // ── Main ConsoleView ─────────────────────────────────────────────────────────
 export default function ConsoleView({
     openingQuestion,
-    openingEmotion,
     currentFocus,
     resumeContext,
     interviewPlan,
@@ -158,7 +155,7 @@ export default function ConsoleView({
     const { stt, tts } = useVoice();
 
     const [messages, setMessages] = useState<Message[]>([
-        { id: "opening", sender: "assistant", text: openingQuestion, emotion: openingEmotion, timestamp: new Date() },
+        { id: "opening", sender: "assistant", text: openingQuestion, timestamp: new Date() },
     ]);
     const [input, setInput] = useState(""); // Kept for any fallback behavior though mostly unused
     const [isTyping, setIsTyping] = useState(false);
@@ -244,7 +241,7 @@ export default function ConsoleView({
             const aiText = rawAiText.replace("[REQUIRES_CODE]", "").trim();
 
             const aiId = `ai-${Date.now()}`;
-            const aiMsg: Message = { id: aiId, sender: "assistant", text: aiText, emotion: data.emotion ?? "😐", timestamp: new Date() };
+            const aiMsg: Message = { id: aiId, sender: "assistant", text: aiText, timestamp: new Date() };
 
             setMessages((prev) => [...prev, aiMsg]);
 
@@ -482,8 +479,7 @@ export default function ConsoleView({
                             {msg.sender === "assistant" && (
                                 <div className="flex items-center gap-2 mb-1">
                                     <VoiceWave active={speakingId === msg.id && tts.speaking} />
-                                    <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-1.5">
-                                        {msg.emotion && <span className="text-sm">{msg.emotion}</span>}
+                                    <span className="text-[10px] text-[var(--text-muted)]">
                                         {speakingId === msg.id && tts.speaking ? "Speaking…" : "Interviewer"}
                                     </span>
                                 </div>
