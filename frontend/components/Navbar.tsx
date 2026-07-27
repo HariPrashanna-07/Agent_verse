@@ -77,11 +77,7 @@ export default function Navbar({ currentView, userName, showSteps = true, onOpen
                 <div className="flex items-center gap-2 flex-shrink-0">
                     {isAuthenticated ? (
                         <>
-                            {userName && (
-                                <span className="hidden sm:block text-xs text-[var(--text-muted)] max-w-[120px] truncate">
-                                    {userName}
-                                </span>
-                            )}
+
 
                             {/* Settings gear */}
                             {onOpenSettings && (
