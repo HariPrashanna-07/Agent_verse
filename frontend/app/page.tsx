@@ -57,8 +57,8 @@ function AppInner() {
     setView("console");
   };
 
-  const handleInterviewEnd = (evalData: Record<string, unknown>) => {
-    setEvaluation(evalData as unknown as InterviewEvaluationData);
+  const handleInterviewEnd = (evaluation: InterviewEvaluationData) => {
+    setEvaluation(evaluation);
     setView("scorecard");
   };
 
