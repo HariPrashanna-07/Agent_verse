@@ -7,10 +7,11 @@ interface Message {
     content: string;
 }
 
-const API_BASE =
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || (
     typeof window !== "undefined" && window.location.hostname === "localhost"
         ? "http://localhost:8000"
-        : "";
+        : ""
+);
 
 export default function ChatbotWidget() {
     const [open, setOpen] = useState(false);
