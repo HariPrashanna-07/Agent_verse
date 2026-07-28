@@ -4,9 +4,7 @@ from backend.app.utils.groq_client import get_groq_client
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Role-type & company-tier helpers (mirrored from planner_agent)
-# ---------------------------------------------------------------------------
+
 
 _SOFTWARE_KEYWORDS = {
     "software", "swe", "backend", "front end", "frontend", "full stack", "fullstack",

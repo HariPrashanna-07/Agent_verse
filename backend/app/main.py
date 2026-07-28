@@ -25,6 +25,8 @@ from backend.app.models.schemas import (
     ScorecardHistoryResponse,
     ChatRequest,
     ChatResponse,
+    CodeReviewRequest,
+    CodeReviewResponse,
 )
 from backend.app.utils.pdf_parser import extract_text_from_pdf_bytes
 from backend.app.utils.s3_uploader import upload_pdf_to_s3
@@ -33,6 +35,7 @@ from backend.app.utils.dynamodb import (
     create_user,
     save_scorecard,
     get_scorecards,
+    delete_scorecard,
 )
 from backend.app.utils.auth import (
     hash_password,
@@ -45,6 +48,7 @@ from backend.app.agents.planner_agent import generate_interview_plan
 from backend.app.agents.interview_agent import get_interviewer_response
 from backend.app.agents.evaluation_agent import evaluate_interview
 from backend.app.agents.roadmap_agent import generate_7day_roadmap
+from backend.app.agents.reviewer_agent import review_code
 
 import edge_tts
 import tempfile
@@ -367,6 +371,23 @@ def fetch_scorecards(
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@app.delete("/api/scorecards/{cid}/{interview_id}", tags=["Scorecards"])
+def delete_scorecard_endpoint(
+    cid: str,
+    interview_id: str,
+    candidate_id: str = Depends(get_current_candidate_id),
+):
+    """Delete a specific scorecard."""
+    if cid != candidate_id:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    try:
+        delete_scorecard(candidate_id, interview_id)
+        return {"status": "success", "message": "Scorecard deleted"}
+    except Exception as exc:
+        logger.exception("delete_scorecard failed: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 # ===========================================================================
 # TTS (Edge-TTS backend)
 # ===========================================================================
@@ -399,59 +420,40 @@ async def generate_speech(req: TTSRequest):
 
 
 # ===========================================================================
+# Code Reviewer & System Design
+# ===========================================================================
+
+@app.post("/api/review-code", response_model=CodeReviewResponse, tags=["Review"])
+async def review_code_endpoint(req: CodeReviewRequest):
+    """Evaluates candidate code or architecture against complexity & edge cases."""
+    try:
+        review_data = review_code(
+            code_snippet=req.code_snippet, 
+            language=req.language or "python", 
+            context=req.context or ""
+        )
+        return CodeReviewResponse(
+            status="success",
+            time_complexity=review_data.get("time_complexity", "Unknown"),
+            space_complexity=review_data.get("space_complexity", "Unknown"),
+            edge_cases_missed=review_data.get("edge_cases_missed", []),
+            optimization_tips=review_data.get("optimization_tips", [])
+        )
+    except Exception as exc:
+        logger.exception("review-code failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Code evaluation failed.")
+
+# ===========================================================================
 # AI Chatbot (general-purpose assistant)
 # ===========================================================================
 
-from groq import Groq as GroqClient
-
-_groq_client = GroqClient(api_key=settings.GROQ_API_KEY) if settings.GROQ_API_KEY else None
-
-_CHATBOT_SYSTEM = """
-You are the PrepAI Study & Interview Assistant — a focused AI coach embedded in the PrepAI interview-prep platform.
-
-STRICT SCOPE — you may ONLY answer questions related to:
-- Interview preparation (technical, behavioural, HR rounds)
-- Study plans and learning strategies for CS, engineering, finance, or any professional domain
-- Data structures, algorithms, system design, coding problems
-- Resume writing, formatting, and improvement tips
-- Career advice (which role to target, skill gaps, how to grow in a field)
-- Domain-specific knowledge relevant to job interviews (e.g. OS, networking, DBMS, OOP, finance, circuits)
-- How to use the PrepAI platform (scorecard, roadmap, upload, settings)
-
-OUT OF SCOPE — politely decline anything unrelated to studying or interviews, such as:
-- General chat, jokes, creative writing, or personal conversations
-- News, sports, weather, cooking, movies, travel, or any non-academic topic
-- Code generation for personal projects (unless it's a practice problem or interview question)
-
-When a question is out of scope, respond with exactly this pattern:
-"I'm only able to help with study and interview-related questions. Could you ask me something about interview prep, career advice, or a topic you're studying?"
-
-RESPONSE STYLE:
-- Be concise, warm, and encouraging
-- Use bullet points for lists
-- Keep answers under 300 words unless the user explicitly asks for a detailed explanation
-- For coding/DSA questions, show code examples when helpful
-"""
-
+from backend.app.agents.chatbot_agent import get_chatbot_response
 
 @app.post("/api/chat", response_model=ChatResponse, tags=["Chatbot"])
 async def chatbot(req: ChatRequest):
     """General-purpose AI career assistant — no auth required."""
-    if not _groq_client:
-        raise HTTPException(status_code=503, detail="Groq API key not configured.")
-
     try:
-        messages = [{"role": "system", "content": _CHATBOT_SYSTEM}]
-        for m in req.messages:
-            messages.append({"role": m.role, "content": m.content})
-
-        completion = _groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",  # Fast enough for casual chat; 70B budget saved for eval/planner
-            messages=messages,
-            temperature=0.7,
-            max_tokens=512,
-        )
-        reply = completion.choices[0].message.content or ""
+        reply = get_chatbot_response(req.messages)
         return ChatResponse(reply=reply)
     except Exception as exc:
         logger.exception("chatbot failed: %s", exc)

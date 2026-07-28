@@ -174,3 +174,20 @@ class HealthResponse(BaseModel):
     groq_configured: bool
     aws_configured: bool
     version: str
+
+
+# ---------------------------------------------------------------------------
+# Code Reviewer
+# ---------------------------------------------------------------------------
+
+class CodeReviewRequest(BaseModel):
+    code_snippet: str
+    language: Optional[str] = "python"
+    context: Optional[str] = ""
+
+class CodeReviewResponse(BaseModel):
+    status: str
+    time_complexity: str
+    space_complexity: str
+    edge_cases_missed: List[str]
+    optimization_tips: List[str]

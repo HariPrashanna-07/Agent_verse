@@ -109,3 +109,19 @@ def get_scorecards(candidate_id: str) -> list[dict]:
     except (BotoCoreError, ClientError) as exc:
         logger.error("DynamoDB get_scorecards failed: %s", exc)
         raise
+
+
+def delete_scorecard(candidate_id: str, interview_id: str) -> None:
+    """Delete a scorecard for a given candidate and interview ID."""
+    try:
+        table = _get_resource().Table(settings.DYNAMODB_SCORECARDS_TABLE)
+        table.delete_item(
+            Key={
+                "candidate_id": candidate_id,
+                "interview_id": interview_id
+            }
+        )
+        logger.info("Scorecard deleted: candidate=%s interview=%s", candidate_id, interview_id)
+    except (BotoCoreError, ClientError) as exc:
+        logger.error("DynamoDB delete_scorecard failed: %s", exc)
+        raise

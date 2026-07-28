@@ -38,6 +38,8 @@ The platform uses a suite of specialized AI agents to orchestrate the interview 
 | **Interview Agent** | `backend/app/agents/interview_agent.py` | Acts as the real-time technical interviewer, actively questioning and pushing back contextually. | `llama-3.1-8b-instant` |
 | **Evaluation Agent** | `backend/app/agents/evaluation_agent.py` | Deeply evaluates the entire interview transcript, grading multiple dimensions and finding weaknesses. | `llama-3.3-70b-versatile` |
 | **Roadmap Agent** | `backend/app/agents/roadmap_agent.py` | Synthesizes a 7-day actionable study guide focused precisely on the candidate's failures. | `llama-3.3-70b-versatile` |
+| **Chatbot Agent** | `backend/app/agents/chatbot_agent.py` | Embedded study and interview prep assistant. | `llama-3.1-8b-instant` |
+| **Reviewer Agent** | `backend/app/agents/reviewer_agent.py` | Analyzes code snippets or system/architecture descriptions, evaluating time/space complexity and missing edge cases. | `llama-3.3-70b-versatile` |
 
 ---
 

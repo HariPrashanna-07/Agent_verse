@@ -5,6 +5,7 @@ import type { InterviewEvaluationData } from "@/types";
 
 
 interface Scorecard {
+    interview_id: string;
     target_role: string;
     target_company: string;
     evaluation: InterviewEvaluationData;
@@ -46,6 +47,28 @@ export default function DashboardView({ candidateId, token, onTakeInterview, onV
             fetchHistory();
         }
     }, [candidateId, token]);
+
+    const handleDelete = async (e: React.MouseEvent, interviewId: string) => {
+        e.stopPropagation();
+        if (!confirm("Are you sure you want to delete this scorecard?")) return;
+
+        try {
+            const API_BASE = process.env.NEXT_PUBLIC_API_URL || (typeof window !== "undefined" && window.location.hostname === "localhost" ? "http://localhost:8000" : "");
+            const res = await fetch(`${API_BASE}/api/scorecards/${candidateId}/${interviewId}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            if (!res.ok) throw new Error("Failed to delete scorecard");
+
+            // Remove from local state
+            setScorecards(prev => prev.filter(c => c.interview_id !== interviewId));
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete scorecard.");
+        }
+    };
 
     const scoreColor = (s: number) =>
         s >= 80 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-rose-400";
@@ -150,19 +173,24 @@ export default function DashboardView({ candidateId, token, onTakeInterview, onV
                                 </div>
 
                                 <div className="flex-1 mt-2">
-                                    <div className="text-xs font-semibold text-[var(--text-muted)] mb-2 flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Key Strength
-                                    </div>
-                                    <p className="text-sm text-[var(--text-primary)] line-clamp-2 leading-relaxed">
-                                        {card.evaluation.strengths?.[0] || "Solid overall performance."}
-                                    </p>
+                                    {/* Removed Key Strength as requested, flex-1 keeps padding intact */}
                                 </div>
 
-                                {/* View Report button */}
+                                {/* View Report & Delete button */}
                                 <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]">
-                                    <div className="flex gap-3 text-xs text-[var(--text-muted)]">
-                                        <span>Tech: <span className={`font-semibold ${scoreColor(card.evaluation.scores.technical_accuracy)}`}>{card.evaluation.scores.technical_accuracy}%</span></span>
-                                        <span>Comm: <span className={`font-semibold ${scoreColor(card.evaluation.scores.communication)}`}>{card.evaluation.scores.communication}%</span></span>
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="flex gap-3 text-xs text-[var(--text-muted)]">
+                                            <span>Tech: <span className={`font-semibold ${scoreColor(card.evaluation.scores.technical_accuracy)}`}>{card.evaluation.scores.technical_accuracy}%</span></span>
+                                            <span>Comm: <span className={`font-semibold ${scoreColor(card.evaluation.scores.communication)}`}>{card.evaluation.scores.communication}%</span></span>
+                                        </div>
+                                        <button
+                                            onClick={(e) => handleDelete(e, card.interview_id)}
+                                            className="text-xs text-rose-500/80 hover:text-rose-400 font-semibold text-left transition-colors flex items-center gap-1 w-max"
+                                            title="Delete scorecard"
+                                        >
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            Delete
+                                        </button>
                                     </div>
                                     <span className="text-xs font-semibold text-indigo-400 group-hover:text-indigo-300 flex items-center gap-1 transition-colors">
                                         View Report
