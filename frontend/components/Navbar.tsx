@@ -10,6 +10,7 @@ interface NavbarProps {
     userName?: string;
     showSteps?: boolean;
     onOpenSettings?: () => void;
+    onBack?: () => void;
 }
 
 const steps: { id: AppView; label: string; number: number }[] = [
@@ -20,7 +21,7 @@ const steps: { id: AppView; label: string; number: number }[] = [
 
 const viewOrder: AppView[] = ["upload", "console", "scorecard"];
 
-export default function Navbar({ currentView, userName, showSteps = true, onOpenSettings }: NavbarProps) {
+export default function Navbar({ currentView, userName, showSteps = true, onOpenSettings, onBack }: NavbarProps) {
     const { isAuthenticated, logout } = useAuth();
     const currentIndex = viewOrder.indexOf(currentView);
 
@@ -30,6 +31,17 @@ export default function Navbar({ currentView, userName, showSteps = true, onOpen
 
                 {/* Brand */}
                 <div className="flex items-center gap-2.5 flex-shrink-0">
+                    {onBack && (
+                        <button
+                            onClick={onBack}
+                            title="Go Back"
+                            className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-muted)] hover:text-indigo-400 hover:border-indigo-500/40 transition-all mr-1"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+                            </svg>
+                        </button>
+                    )}
                     <div className="w-8 h-8 rounded-lg gradient-btn flex items-center justify-center shadow-lg">
                         <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.2">
                             <path d="M12 2L2 7l10 5 10-5-10-5z" strokeLinejoin="round" />

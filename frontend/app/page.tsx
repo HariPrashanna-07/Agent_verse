@@ -74,6 +74,19 @@ function AppInner() {
     setView("dashboard");
   };
 
+  const handleBack = () => {
+    if (view === "upload") setView("dashboard");
+    else if (view === "console") {
+      setSession(null);
+      setView("dashboard");
+    }
+    else if (view === "scorecard") {
+      setSession(null);
+      setEvaluation(null);
+      setView("dashboard");
+    }
+  };
+
   const currentFocus = (() => {
     if (!session) return "General";
     const plan = session.interviewPlan as { plan?: { focus: string }[] };
@@ -91,6 +104,7 @@ function AppInner() {
         userName={user?.name}
         showSteps={isInterviewFlow}
         onOpenSettings={isAuthenticated ? () => setSettingsOpen(true) : undefined}
+        onBack={view !== "dashboard" && view !== "login" ? handleBack : undefined}
       />
 
       {view === "login" && <LoginView onLoginSuccess={handleLoginSuccess} />}
